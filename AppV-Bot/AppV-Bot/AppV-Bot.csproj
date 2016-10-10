@@ -135,6 +135,16 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppV-Bot.Facades\AppV-Bot.Facades.csproj">
+      <Project>{301A38D1-DD8C-4970-94DE-1DE474A63A35}</Project>
+      <Name>AppV-Bot.Facades</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AppV-Bot.Models\AppV-Bot.Models.csproj">
+      <Project>{34AAE8AE-6AC1-4DA1-8D7A-E46B1A5777CF}</Project>
+      <Name>AppV-Bot.Models</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

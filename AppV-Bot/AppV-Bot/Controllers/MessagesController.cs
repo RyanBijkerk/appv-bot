@@ -1,10 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using AppV_Bot.Bots;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.FormFlow;
+using AppV_Bot.Facades;
+using AppV_Bot.Models;
 using Microsoft.Bot.Connector;
 
 namespace AppV_Bot
@@ -12,36 +13,50 @@ namespace AppV_Bot
     [BotAuthentication]
     public class MessagesController : ApiController
     {
+        private readonly PackagesFacade _packagesFacade;
 
-        internal static IDialog<AppVPackageBot.AppVCommand> MakeRootDialog()
+        public MessagesController()
         {
-            return Chain.From(() => FormDialog.FromForm(AppVPackageBot.AppVCommand.BuildForm));
+            _packagesFacade = new PackagesFacade();
         }
 
-        /// <summary>
-        /// POST: api/Messages
-        /// Receive a message from a user and reply to it
-        /// </summary>
+        public async Task<List<PackageModel>> GetPackages()
+        {
+            return await _packagesFacade.GetPackages();
+        }
+
+
+        //<summary>
+        //POST: api/Messages
+        //Receive a message from a user and reply to it
+        //</summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            if (activity != null)
+            ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+            if (activity.Type == ActivityTypes.Message)
             {
-                // one of these will have an interface and process it
-                switch (activity.GetActivityType())
-                {
-                    case ActivityTypes.Message:
-                        await Conversation.SendAsync(activity, MakeRootDialog);
-                        break;
-                    case ActivityTypes.ConversationUpdate:
-                    case ActivityTypes.ContactRelationUpdate:
-                    case ActivityTypes.Typing:
-                    case ActivityTypes.DeleteUserData:
-                    default: Trace.TraceError($"Unknown activity type ignored: {activity.GetActivityType()}");
-                        break;
+                var packageList = await GetPackages();
+                var packageStr = "Oeps, something went wrong here!";
 
+                if (packageList.Count == 0)
+                {
+                    packageStr = "I could not find any packages";
                 }
+                else
+                {
+                    packageStr = ($"I found {packageList.Count} package on the machine!");
+                }
+                
+                // return our reply to the user
+                Activity reply = activity.CreateReply(packageStr);
+                await connector.Conversations.ReplyToActivityAsync(reply);
             }
-            return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+            else
+            {
+                HandleSystemMessage(activity);
+            }
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            return response;
         }
 
         private Activity HandleSystemMessage(Activity message)
