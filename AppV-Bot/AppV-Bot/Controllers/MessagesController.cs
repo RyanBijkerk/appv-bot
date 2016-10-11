@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using AppV_Bot.Facades;
+using AppV_Bot.Facades.Luis;
+using AppV_Bot.Facades.Packages;
 using AppV_Bot.Models;
+using AppV_Bot.Models.Luis;
 using Microsoft.Bot.Connector;
 
 namespace AppV_Bot
@@ -14,17 +17,23 @@ namespace AppV_Bot
     public class MessagesController : ApiController
     {
         private readonly PackagesFacade _packagesFacade;
+        private readonly LuisFacade _luisFacade;
 
         public MessagesController()
         {
+            _luisFacade = new LuisFacade();
             _packagesFacade = new PackagesFacade();
         }
 
-        public async Task<List<PackageModel>> GetPackages()
+        public async Task<List<PackageModel>> GetPackages(string packageName)
         {
-            return await _packagesFacade.GetPackages();
+            return await _packagesFacade.GetPackages(packageName);
         }
 
+        public async Task<LuisModel> GetEntity(string query)
+        {
+            return await _luisFacade.GetEntity(query);
+        } 
 
         //<summary>
         //POST: api/Messages
@@ -32,23 +41,41 @@ namespace AppV_Bot
         //</summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
+
+            //                var packageList = await GetPackages();
+
             ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
             if (activity.Type == ActivityTypes.Message)
             {
-                var packageList = await GetPackages();
-                var packageStr = "Oeps, something went wrong here!";
-
-                if (packageList.Count == 0)
+                string returnMessage;
+                var entity = await GetEntity(activity.Text);
+                if (entity.intents.Count() > 0)
                 {
-                    packageStr = "I could not find any packages";
+                    switch (entity.intents[0].intent)
+                    {
+                        case "Package":
+                            var packageList = await GetPackages(entity.entities[0].entity);
+                            if (packageList.Count == 0)
+                            {
+                                returnMessage = $"Cannot find any packages with the name {entity.entities[0].entity}";
+                            }
+                            else
+                            {
+                                returnMessage = $"Package {packageList[0].Name} had id {packageList[0].PackageId}";
+                            }
+                            
+                            break;
+                        default:
+                            returnMessage = "Sorry, I am not getting you...";
+                            break;
+                    }
                 }
                 else
                 {
-                    packageStr = ($"I found {packageList.Count} package on the machine!");
+                    returnMessage = "Sorry, I am not getting you...";
                 }
-                
-                // return our reply to the user
-                Activity reply = activity.CreateReply(packageStr);
+
+                Activity reply = activity.CreateReply(returnMessage);
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
             else
