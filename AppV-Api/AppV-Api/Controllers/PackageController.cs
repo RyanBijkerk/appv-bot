@@ -17,15 +17,17 @@ namespace AppV_Api.Controllers
         {
             _packagesFacade = new PackagesFacade();
         }
-
-        //[EnableQuery]
+        
         [Route("api/packages")]
-        public async Task<List<PackageModel>> GetPackages([FromUri]string packageName)
+        public async Task<List<PackageModel>> GetPackages()
         {
-            var packageList = await _packagesFacade.GetPackages();
-            var packageListFiltered = packageList.Where(p => p.Name.ToLower() == packageName.ToLower()).ToList();
+            return await _packagesFacade.GetPackages();
+        }
 
-            return packageListFiltered;
+        [Route("api/package")]
+        public async Task<PackageModel> GetPackage([FromUri]string packageName)
+        {
+            return await _packagesFacade.GetPackage(packageName);
         }
     }
 }

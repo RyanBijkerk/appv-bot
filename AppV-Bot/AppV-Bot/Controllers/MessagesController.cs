@@ -25,9 +25,14 @@ namespace AppV_Bot
             _packagesFacade = new PackagesFacade();
         }
 
-        public async Task<List<PackageModel>> GetPackages(string packageName)
+        public async Task<List<PackageModel>> GetPackages()
         {
-            return await _packagesFacade.GetPackages(packageName);
+            return await _packagesFacade.GetPackages();
+        }
+
+        public async Task<PackageModel> GetPackage(string packageName)
+        {
+            return await _packagesFacade.GetPackage(packageName);
         }
 
         public async Task<LuisModel> GetEntity(string query)
@@ -53,17 +58,14 @@ namespace AppV_Bot
                 {
                     switch (entity.intents[0].intent)
                     {
-                        case "Package":
-                            var packageList = await GetPackages(entity.entities[0].entity);
-                            if (packageList.Count == 0)
-                            {
-                                returnMessage = $"Cannot find any packages with the name {entity.entities[0].entity}";
-                            }
-                            else
-                            {
-                                returnMessage = $"Package {packageList[0].Name} had id {packageList[0].PackageId}";
-                            }
-                            
+
+                        case "CountPackages" :
+                            var packageList = await GetPackages();
+                            returnMessage = packageList.Count > 0 ? $"I have found {packageList.Count} number of packages" : $"I could not find any packages";
+                            break;
+                        case "SearchPackage":
+                            var package = await GetPackage(entity.entities[0].entity);
+                            returnMessage = package != null ? $"Package {package.Name} with PackageId {package.PackageId}" : $"Cannot find any packages with the name {entity.entities[0].entity}";
                             break;
                         default:
                             returnMessage = "Sorry, I am not getting you...";
