@@ -51,7 +51,7 @@ namespace AppV_Bot
             {
                 string returnMessage;
                 var entity = await GetEntity(activity.Text);
-                if (entity.intents.Count() > 0)
+                if (entity.intents.Any())
                 {
                     switch (entity.intents[0].intent)
                     {
@@ -63,7 +63,7 @@ namespace AppV_Bot
 
                         case "SearchPackage":
  
-                            if (entity.entities.Count() == 0)
+                            if (!entity.entities.Any())
                             {
                                 returnMessage = "Huh, what did you say?";
                                 break;
@@ -106,7 +106,7 @@ namespace AppV_Bot
                     returnMessage = "Sorry, I am not getting you...";
                 }
 
-                Activity reply = activity.CreateReply(returnMessage);
+                var reply = activity.CreateReply(returnMessage);
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
             else
