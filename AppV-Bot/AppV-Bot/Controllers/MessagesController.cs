@@ -46,9 +46,6 @@ namespace AppV_Bot
         //</summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-
-            //                var packageList = await GetPackages();
-
             ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
             if (activity.Type == ActivityTypes.Message)
             {
@@ -63,13 +60,45 @@ namespace AppV_Bot
                             var packageList = await GetPackages();
                             returnMessage = packageList.Count > 0 ? $"I have found {packageList.Count} number of packages" : $"I could not find any packages";
                             break;
+
                         case "SearchPackage":
+ 
+                            if (entity.entities.Count() == 0)
+                            {
+                                returnMessage = "Huh, what did you say?";
+                                break;
+
+                            }
                             var package = await GetPackage(entity.entities[0].entity);
-                            returnMessage = package != null ? $"Package {package.Name} with PackageId {package.PackageId}" : $"Cannot find any packages with the name {entity.entities[0].entity}";
+                            if (package.Name != null)
+                            {
+                                returnMessage = $"I have found a package with the name {package.Name} with the following details: \n\n";
+                                returnMessage += $"PackageId: {package.PackageId} \n\n";
+                                returnMessage += $"VersionId: {package.VersionId} \n\n";
+                                returnMessage += $"Name: {package.Name} \n\n";
+                                returnMessage += $"Version: {package.Version} \n\n";
+                                returnMessage += $"Path: {package.Path} \n\n";
+                                returnMessage += $"IsPublishedToUser: {package.IsPublishedToUser} \n\n";
+                                returnMessage += $"UserPending: {package.UserPending} \n\n";
+                                returnMessage += $"IsPublishedGlobally: {package.IsPublishedGlobally} \n\n";
+                                returnMessage += $"GlobalPending: {package.GlobalPending} \n\n";
+                                returnMessage += $"InUse: {package.InUse} \n\n";
+                                returnMessage += $"InUseByCurrentUser: {package.InUseByCurrentUser} \n\n";
+                                returnMessage += $"PackageSize: {package.PackageSize} \n\n";
+                                returnMessage += $"PercentLoaded: {package.PercentLoaded} \n\n";
+                                returnMessage += $"IsLoading: {package.IsLoading} \n\n";
+                                returnMessage += $"HasAssetIntelligence: {package.HasAssetIntelligence} \n\n";
+                            }
+                            else
+                            {
+                                returnMessage = $"Cannot find any packages with the name {entity.entities[0].entity}";
+                            }
                             break;
+
                         default:
                             returnMessage = "Sorry, I am not getting you...";
                             break;
+
                     }
                 }
                 else
