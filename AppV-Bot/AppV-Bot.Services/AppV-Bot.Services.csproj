@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Luis\LuisService.cs" />
+    <Compile Include="Messages\MessagesService.cs" />
     <Compile Include="Packages\PackagesService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
