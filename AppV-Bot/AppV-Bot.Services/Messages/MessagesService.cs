@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using AppV_Bot.Models;
 using Microsoft.Bot.Connector;
@@ -7,6 +9,19 @@ namespace AppV_Bot.Services.Messages
 {
     public class MessagesService
     {
+        public async Task<string> CreateIntroMessage()
+        {
+            return await Task.Run(() =>
+            {
+                var messageString = "Hi, my name is AppV Bot. \n\n";
+                messageString += "You can run various commands like 'How many packages do I have?'";
+                messageString += "In order to talk with your App-V machine you need to connect your local App-V api.";
+                
+                return messageString;
+            });
+
+        } 
+
         public async Task<string> CreatePackageMessage(PackageModel package)
         {
             return await Task.Run(() =>
@@ -39,8 +54,27 @@ namespace AppV_Bot.Services.Messages
         {
             return await Task.Run(() => packageList.Count > 0 ? $"I have found {packageList.Count} number of packages" : $"I could not find any packages");
         }
-        
-        
+
+        public async Task<string> CreateListPackagesMessage(List<PackageModel> packageList)
+        {
+            return await Task.Run(() =>
+            {
+                string messageString = null;
+                if (packageList.Any())
+                {
+
+                    messageString = $"I have found the following packages: \n\n";
+
+                    foreach (var package in packageList)
+                    {
+                        messageString += $"{package.Name}\n\n";
+                    }
+                }
+                return messageString;
+            });
+        }
+
+
         public async Task HandleSystemMessage(Activity message)
         {
             await Task.Run(() =>

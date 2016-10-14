@@ -37,11 +37,20 @@ namespace AppV_Bot.Facades.Messages
                 {
                     switch (entity.intents[0].intent)
                     {
+                        case "Introduction":
+                            messageString = await _messagesService.CreateIntroMessage();
 
+                            break;
 
                         case "CountPackages":
+                            var packageListCount = await _packagesService.GetPackages();
+                            messageString = await _messagesService.CreateCountPackagesMessage(packageListCount);
+
+                            break;
+
+                        case "ListPackages":
                             var packageList = await _packagesService.GetPackages();
-                            messageString = await _messagesService.CreateCountPackagesMessage(packageList);
+                            messageString = await _messagesService.CreateListPackagesMessage(packageList);
 
                             break;
 
